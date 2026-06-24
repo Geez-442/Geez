@@ -1,0 +1,50 @@
+import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { AuthServiceNest } from './auth.service.nest';
+import { Role } from '../auth.stub';
+
+class RegisterDto {
+  email!: string;
+  password!: string;
+  role!: Role;
+  displayName?: string;
+  prazVendorNumber?: string;
+}
+
+class LoginDto {
+  email!: string;
+  password!: string;
+}
+
+@Controller('auth')
+export class AuthControllerNest {
+  constructor(private authService: AuthServiceNest) {}
+
+  @Post('register')
+  async register(@Body() body: RegisterDto) {
+    try {
+      const { email, password, role, displayName, prazVendorNumber } = body as any;
+      if (!email || !password || !role) {
+        throw new HttpException('email, password and role are required', HttpStatus.BAD_REQUEST);
+      }
+      if (role === Role.PRAZ_Regulator && !prazVendorNumber) {
+        throw new HttpException('prazVendorNumber required for PRAZ_Regulator in prototype', HttpStatus.BAD_REQUEST);
+      }
+      const user = await this.authService.register(email, password, role, displayName, prazVendorNumber);
+      return { status: 'ok', user };
+    } catch (err: any) {
+      throw new HttpException(err.message || 'Server error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('login')
+  async login(@Body() body: LoginDto) {
+    const { email, password } = body as any;
+    if (!email || !password) throw new HttpException('email and password required', HttpStatus.BAD_REQUEST);
+
+    const user = await this.authService.validateUser(email, password);
+    if (!user) throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+
+    const token = this.authService.generateJwt(user as any);
+    return { token, user: { id: (user as any).id, email: (user as any).email, role: (user as any).role } };
+  }
+}

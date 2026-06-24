@@ -10,8 +10,10 @@ async function bootstrap() {
   const app = express();
   app.use(bodyParser.json());
 
-  // Mount auth routes
-  app.use('/auth', authRouter);
+  // Mount auth routes (legacy express router retained for backward compatibility). If null, skip.
+  if (authRouter) {
+    app.use('/auth', authRouter as any);
+  }
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 

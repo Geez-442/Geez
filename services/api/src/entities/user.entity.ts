@@ -1,26 +1,26 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
-import { Role } from '../../services/api/src/auth.stub';
+import { Role } from '../auth.stub';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
-  @Column({ nullable: true })
-  displayName: string;
+  @Column({ type: 'text', nullable: true })
+  displayName!: string | null;
 
-  @Column({ nullable: true })
-  passwordHash: string;
+  @Column({ type: 'text', nullable: true })
+  passwordHash!: string | null;
 
   @Column({ type: 'text' })
-  role: Role;
+  role!: Role;
 
-  @Column({ nullable: true })
-  prazVendorNumber: string | null;
+  @Column({ type: 'text', nullable: true })
+  prazVendorNumber!: string | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }
