@@ -1,82 +1,89 @@
 # ZETS + ZETA Master Blueprint
-**Project Title**: Design and Implementation of a Secure Zimbabwe Electronic Tender Issuing System (ZETS) with Embedded AI Assistant (ZETA) for Enhanced Transparency, Compliance, and Anti-Corruption in Public Procurement
 
-**Student**: Gerald Gwashavanhu (r226871T)  
-**Programme**: BSc Honours Computer Systems Engineering  
-**Research Area**: Software Engineering and Development  
+**Project Title**: Design and Implementation of a Secure Zimbabwe Electronic Tender Issuing System (ZETS) with Embedded AI Assistant (ZETA)
 
-## Core Proposal Excerpts (Use Verbatim Where Needed)
+**Student**: Gerald Gwashavanhu (r226871T)
+**Programme**: BSc Honours Computer Systems Engineering
+**Research Area**: Software Engineering and Development
+
+---
+
+## Overview
+This document is the authoritative Sprint 0 blueprint and prompt package for ZETS (Zimbabwe Electronic Tender Issuing System) and ZETA (Zimbabwe E-Tender Assistant). It contains: core proposal excerpts, Zimbabwe-specific tailoring, system and role prompts for the AI agent, a sprint sequence, ethical and data guidance, and sprint deliverables. Use this file as the single source of truth for development, research writeups, and supervisor summaries.
+
+---
+
+## Core Proposal Excerpts (Verbatim)
 "This research proposes the design and implementation of the Zimbabwe Electronic Tender Issuing System (ZETS) and its embedded AI assistant ZETA (Zimbabwe E-Tender Assistant) — a research-grade prototype that explores what a more complete, accessible, and corruption-resistant e-procurement platform looks like within Zimbabwe's legal and institutional context."
 
 "To design, implement, and critically evaluate ZETS — a secure, PRAZ-compliant electronic tender issuing system, together with ZETA, an embedded intelligent AI assistant, in order to enhance procurement transparency, reduce structural opportunities for corruption, and improve accessibility for SMEs and underserved participants in Zimbabwe's public procurement ecosystem."
 
+---
+
 ## Zimbabwe-Specific Tailoring & Relevance
-- **Context**: Aligns with PRAZ eGP system (launched Oct 2023, phases include e-registration, e-bidding, evaluation, contract management). Addresses gaps in offline access, SME inclusion (low digital literacy, rural connectivity), full-lifecycle auditability, and intelligent oversight across 700+ entities.
-- **Pain Points Addressed** (from X sentiment & literature): Tenderpreneurism, bribes, exclusion of genuine SMEs/Zimbabwean businesses, opaque awards, collusive bidding. ZETS counters with PWA/offline, simple ZETA guidance, public dashboards, anomaly flags.
-- **Supervisor Alignment**: AI (ZETA) is central with detailed prompts/data; SMART objectives; security/CS depth (crypto, RBAC, LangChain); compliance matrix; synthetic data plan; human touch via iterative testing.
+- Aligns with PRAZ eGP objectives (e-registration, e-bidding, evaluation, contract management), addressing gaps in offline access, SME inclusion, auditability, and intelligent oversight across 700+ public entities.
+- Addresses real-world pain points: tenderpreneurism, favoritism, low SME participation (especially rural), opaque awards, and collusive bidding.
+- Prioritises accessibility (PWA + SMS), strong cryptographic audit trails, explainable AI guidance, and time-locked bid sealing to preserve sealed-bid confidentiality.
 
-## System Prompt for Agent (Paste Verbatim)
+---
+
+## System Prompt (ZETS-Builder)
+
 ```
-You are ZETS-Builder, an expert engineering agent. Your goal: design, implement, test, and document a secure, PRAZ-compliant electronic tender issuing system (ZETS) and embedded advisory AI (ZETA). Work iteratively in two-week sprints. Always produce: (a) design artefacts (ERD, API spec, threat model, data flows), (b) complete runnable code scaffolding with explanations, (c) test plan (unit + integration), (d) Docker deployment recipe, (e) evaluation report snippet. 
+You are ZETS-Builder, an expert engineering agent assigned to develop a research-grade prototype (ZETS) and its advisory AI (ZETA). Work iteratively in two-week sprints. Produce: design artefacts (ERD, API spec, threat model), runnable scaffold code, test plan (unit + integration), Docker recipes, and evaluation notes.
 
-Constrain ZETA to advisory mode only; never generate/reveal sealed bid contents. Log all decisions. Produce a short supervisor summary at each sprint end. Follow Zimbabwe procurement law (PPDPA Act [Chapter 22:23], PRAZ Manual, Constitution §315, eGP modules). 
-
-Guardrails: Strict role separation (Supplier, PMU Officer, PRAZ Regulator, Public Observer); cryptographic bid vault (AES-256 + time-lock); append-only audit chain; offline PWA support; explainability for LLM/ML components. Cite sources for policy/legal claims. Use Next.js 15 (App Router, PWA), NestJS + TypeScript, PostgreSQL + Drizzle, MinIO, Redis, Africa's Talking SMS, LangChain + Claude (or fallback).
-```
-
-## Role-Specific Prompts (Feed to Agent as Needed)
-- **Architect**: "Produce high-level architecture diagram (Mermaid), component list, data flows, and minimal tech stack justification tailored to low-bandwidth Zimbabwe (Next.js SSR, PWA, etc.)."
-- **Security Engineer**: "Produce STRIDE threat model, OWASP Top 10 test cases for bid vault/auth, encryption key lifecycle, and audit log implementation."
-- **Data/AI Engineer**: "Specify datasets (synthetic + public), feature engineering for anomaly detection (e.g., bid patterns, collusion indicators), training pipeline, and synthetic data generation script. Reference OECD.AI/Ivalua practices."
-- **Frontend Engineer**: "Produce PWA offline flow (service workers for bid prep), accessibility checklist (WCAG for low-literacy), mobile-first UI with Tailwind/shadcn."
-- **ZETA Specialist**: "Refine LangChain orchestration with retrieval (PRAZ rules), tool calling for flagging, and grounded responses."
-
-## ZETA System Prompt (Core - Embed in Code)
-```
-You are ZETA, an advisory assistant for ZETS (Zimbabwe E-Tender Assistant). Provide role-differentiated guidance: explain PRAZ rules/eGP processes, flag SPOC escalation conditions, surface bidding pattern anomaly alerts (without accessing sealed bids). 
-
-When uncertain: "INSUFFICIENT DATA — ESCALATE TO HUMAN". Log all advice with citations to legal sources (PPDPA, PRAZ Manual). Maintain explainability and human-in-the-loop. Never make binding decisions.
+Constrain ZETA to advisory-only: never access or reveal sealed bid contents. Log all advice and decisions. Follow Zimbabwe procurement law (PPDPA Act [Chapter 22:23], PRAZ Manual, Constitution §315) where referenced. Prioritise security, explainability, and SME accessibility.
 ```
 
-## Sprint-by-Sprint Prompt Sequence (Iterative - Feed One at a Time)
-Use the general System Prompt + role prompts per sprint. At sprint end: "Produce deliverables, list open risks, next sprint plan, and supervisor summary."
+---
 
-1. **Sprint 0: Setup** — "Create monorepo (Turborepo), Git setup, Docker Compose (Postgres/MinIO/Redis), CI basics (GitHub Actions), and detailed README with sprint cadence + Zimbabwe context."
-2. **Sprint 1: Auth & Roles** — "Implement RBAC (4 roles), PRAZ vendor verification stub, JWT + refresh, unit tests."
-3. **Sprint 2: Tender Publication** — "API + UI for tender CRUD (≥5 types), publication workflow, acceptance tests."
-4. **Sprint 3: Bid Vault** — "Encrypted vault (AES-256), time-lock sealing, COI declarations, append-only hash chain audit log."
-5. **Sprint 4: ZETA Basic** — "LangChain skeleton, system prompt integration, Q&A validation, sandboxed calls (advisory only)."
-6. **Sprint 5: Anomaly Detection** — "Bidding pattern detector (rules + simple ML/LLM), synthetic dataset, evaluation metrics (e.g., Isolation Forest style patterns for collusion/red flags)."
-7. **Sprint 6: Offline & Dashboard** — "PWA offline bid editor, public transparency dashboard (live notices, awards, spend analytics with Chart.js, APP comparisons)."
-8. **Sprint 7+: Final** — "OWASP pentest, usability study (10+ participants, think-aloud), full compliance mapping vs. PPDPA/eGP, dissertation sections, polish."
+## ZETA Core Prompt (Advisory Assistant)
 
-## Data, Training, Ethics & Synthetic Strategy
-- **Sources**: PRAZ Manual, Standard Bidding Documents, eGP public info, simulated logs. Generate synthetic tenders/bids (JSON/CSV) with realistic Zimbabwe elements (categories, procuring entities, patterns for anomalies like unusual win rates, rapid bid clustering).
-- **Anomaly Features**: Bid amount deviations, supplier collusion signals, timing anomalies, COI flags.
-- **Ethics**: Advisory-only; audit every ZETA interaction; human oversight; no real personal data. Follow OECD.AI guidelines for high-stakes governance.
+```
+You are ZETA, the Zimbabwe E-Tender Assistant. Provide role-differentiated, grounded guidance: supplier help (forms, eligibility), PMU assistance (checklists, thresholds), PRAZ analytics (anomaly summaries). Always cite legal/regulatory sources where applicable. When data is insufficient, respond: "INSUFFICIENT DATA — ESCALATE TO HUMAN". Never make binding procurement decisions.
+```
 
-## Deliverables (Per Sprint)
-- Design artefacts (diagrams, specs)
+---
+
+## Role-Specific Prompts (Examples)
+- Architect: "Produce a high-level architecture (Mermaid), component list, data flows, and a short justification for each choice tailored to low-bandwidth Zimbabwe contexts."
+- Security Engineer: "Produce STRIDE analysis, OWASP Top 10 tests, encryption key lifecycle, and audit log design for append-only hash chains."
+- Data/AI Engineer: "Specify synthetic dataset schema, anomaly features, training/evaluation approach, and a small synthetic data generator."
+- Frontend Engineer: "Design a PWA offline flow, low-bandwidth UI patterns, and an accessibility checklist for low-literacy users."
+
+---
+
+## Sprint-by-Sprint Plan (High-Level)
+1. Sprint 0 — Setup: Monorepo scaffold, Docker Compose (Postgres/MinIO/Redis/Adminer), CI skeleton, README with sprint cadence and decisions. (This file is Sprint 0 deliverable.)
+2. Sprint 1 — Auth & Roles: Implement RBAC (Supplier, PMU_Officer, PRAZ_Regulator, Public_Observer), JWT stub, unit tests.
+3. Sprint 2 — Tender Publication: Tender CRUD, publication workflow, acceptance tests.
+4. Sprint 3 — Bid Vault: AES-256 encryption, time-lock sealing, COI declarations, append-only hash chain audit log.
+5. Sprint 4 — ZETA Basic: LangChain skeleton, system prompt integration, sandboxed advisory calls.
+6. Sprint 5 — Anomaly Detection: Rule-based + ML detector on synthetic data, evaluation metrics.
+7. Sprint 6 — Offline & Dashboard: PWA offline editor, public transparency dashboard.
+8. Sprint 7+ — Finalise: OWASP pentest, usability studies, compliance matrix, dissertation write-up.
+
+---
+
+## Data, Ethics & Synthetic Strategy
+- Use public PRAZ materials, standard bidding documents, and synthetic data for training/evaluation. Do not use real personal or sensitive procurement data in development.
+- Synthetic dataset should include realistic Zimbabwe features (procuring entities, local currency, SME profiles, collusion patterns).
+- Ethics: ZETA remains advisory; every AI suggestion must be logged and auditable. Human-in-the-loop required for high-stakes decisions.
+
+---
+
+## Deliverables per Sprint
+- Design artefacts (diagrams/specs)
 - Code + tests
 - Deployment scripts
-- Evaluation report snippet
-- Supervisor summary (ties to objectives, risks, AI centrality)
+- Evaluation notes and supervisor summary
 
-## Risks & Mitigations (Register)
-- Connectivity: PWA + throttled testing.
-- AI Hallucinations: Grounded retrieval + "escalate" rule.
-- Scope Creep: Prioritize vault + ZETA.
-- Compliance: Maintain mapping table.
+---
 
-## Evaluation Plan
-- Functional vs. SMART objectives.
-- Security: OWASP ZAP.
-- Usability: Think-aloud sessions.
-- AI: Accuracy of guidance/anomalies on synthetic data.
-- Compliance: Matrix against PPDPA/eGP modules.
+## References
+- PRAZ eGP documentation, PPDPA Act Chapter 22:23, OECD.AI guidelines, relevant procurement ML literature.
 
-## Work Plan & References
-[Insert your original table; update dates iteratively.]  
-References: Your proposal list + PRAZ eGP docs, OECD.AI, relevant papers on procurement ML.
+---
 
-**Next Action for Gerald**: Confirm and I'll generate the exact Sprint 0 agent prompt + full repo scaffold code/README. We iterate from there—test each sprint thoroughly before moving on.
+## Notes
+This file should be kept up-to-date. Sprint 0 tasks in this repository implement the minimal scaffold required to begin Sprint 1. For any deviation, record the decision in the Sprint 0 Decisions & Rationale section in README.md.

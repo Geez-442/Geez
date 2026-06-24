@@ -25,3 +25,16 @@ dist/
 
 # Misc
 coverage/
+
+# Docker
+docker-compose.override.yml
+**/Dockerfile
+
+# Logs
+logs/
+*.log
+
+# JetBrains
+*.iml
+
+# Secrets (ensure .env is in gitignore)

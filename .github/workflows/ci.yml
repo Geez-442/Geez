@@ -3,17 +3,26 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  lint-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Install root dependencies (if any)
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies (root)
         run: |
-          echo "No root install step defined yet"
-      - name: Lint
+          echo "No root-level install configured in Sprint 0"
+      - name: Lint (placeholder)
         run: |
-          echo "No lint step defined yet"
+          echo "Add ESLint step in Sprint 1"
+      - name: Install and test services/api (placeholder)
+        run: |
+          echo "Installing and testing services/api"
+          cd services/api || exit 1
+          npm install
+          npm test

@@ -8,4 +8,6 @@ Sprint 0 scaffold includes:
 - Docker Compose + infra placeholders
 - CI skeleton (GitHub Actions)
 
-See PROJECT_BLUEPRINT.md for detailed next steps and sprint planning. 
+See PROJECT_BLUEPRINT.md for detailed next steps and sprint planning.
+
+For a full Sprint 0 developer guide and decisions rationale, open README_SPRINT0.md in the repository root.
