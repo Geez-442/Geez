@@ -1,0 +1,11 @@
+{
+  "name": "zets-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "lint": "eslint .",
+    "test": "jest"
+  }
+}

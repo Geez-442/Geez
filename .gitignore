@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log*
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Env
+.env
+.env.*
+
+# Next.js
+.next/
+out/
+
+# VScode
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Build
+dist/
+
+# Misc
+coverage/
