@@ -25,13 +25,13 @@ export class AnomalyFlag {
   @Column({ type: 'enum', enum: AnomalySeverity })
   severity!: AnomalySeverity;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   targetType!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   targetId!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   actorId!: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -40,7 +40,7 @@ export class AnomalyFlag {
   @Column({ default: false })
   reviewed!: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   scanRunId!: string | null;
 
   @CreateDateColumn()

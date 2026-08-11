@@ -44,10 +44,10 @@ export class Tender {
   @Column({ type: 'text', default: TenderStatus.Draft })
   status!: TenderStatus;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   publishedBy!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   awardedBidId!: string | null;
 
   @Column({ type: 'text', nullable: true })

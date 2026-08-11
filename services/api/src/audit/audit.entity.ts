@@ -17,7 +17,7 @@ export class AuditLog {
   @Column()
   targetType!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   targetId!: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -26,6 +26,6 @@ export class AuditLog {
   @CreateDateColumn()
   timestamp!: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   hash!: string | null;
 }
