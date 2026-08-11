@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, BadRequestException, ConflictException } from '@nestjs/common';
 import { AuthServiceNest } from './auth.service.nest';
 import { Role } from '../auth.stub';
 import { IsEmail, IsString, MinLength, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
@@ -46,6 +46,12 @@ export class AuthControllerNest {
       const user = await this.authService.register(email, password, role, displayName, prazVendorNumber);
       return { status: 'ok', user };
     } catch (err: any) {
+      if (err instanceof BadRequestException) {
+        throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      }
+      if (err.message?.toLowerCase().includes('user already exists')) {
+        throw new HttpException(err.message, HttpStatus.CONFLICT);
+      }
       throw new HttpException(err.message || 'Server error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
