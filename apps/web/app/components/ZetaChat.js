@@ -34,14 +34,15 @@ export default function ZetaChat({ session, placeholder = 'Ask ZETA…' }) {
     setInput('');
 
     try {
-      const payload = await apiRequest('/ai/chat', {
+      const payload = await apiRequest('/zeta/ask', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.token}` },
-        body: JSON.stringify({ message: prompt, history: messages.slice(-6) }),
+        body: JSON.stringify({ query: prompt }),
       });
+      const answer = payload.answer || payload.response || 'No response from ZETA.';
       setMessages((current) => [
         ...current,
-        { role: 'assistant', content: `${payload.reply} ${payload.safetyNote || ''}`.trim() },
+        { role: 'assistant', content: answer },
       ]);
     } catch (err) {
       setError(err.message);

@@ -205,9 +205,16 @@ export default function PmuPortalPage() {
     <main style={{ minHeight: '100vh', padding: '40px 20px 64px' }}>
       <nav style={{ maxWidth: 1240, margin: '0 auto 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: 1, color: '#7dd3fc' }}>ZETS PMU Portal</div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <Link href="/public" style={{ ...secondaryButtonStyle, textDecoration: 'none' }}>Transparency</Link>
           <Link href="/" style={{ ...secondaryButtonStyle, textDecoration: 'none' }}>Home</Link>
+          <button
+            type="button"
+            onClick={() => { window.localStorage.removeItem('zets-session'); window.location.href = '/'; }}
+            style={{ ...secondaryButtonStyle, background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', color: '#fecaca' }}
+          >
+            Logout
+          </button>
         </div>
       </nav>
 
@@ -225,7 +232,7 @@ export default function PmuPortalPage() {
         {message && <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.24)', borderRadius: 14, padding: 14, color: '#bbf7d0', marginBottom: 16 }}>{message}</div>}
         {error && <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.24)', borderRadius: 14, padding: 14, color: '#fecaca', marginBottom: 16 }}>{error}</div>}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 20, alignItems: 'start' }}>
           <div style={{ display: 'grid', gap: 20 }}>
             <div style={cardStyle}>
               <h2 style={{ marginTop: 0, fontSize: 20 }}>Create tender</h2>
