@@ -15,6 +15,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - zets
 
   redis:
     image: redis:7
@@ -26,6 +28,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - zets
 
   minio:
     image: minio/minio:latest
@@ -43,6 +47,8 @@ services:
       interval: 20s
       timeout: 5s
       retries: 5
+    networks:
+      - zets
 
   adminer:
     image: adminer:latest
@@ -54,6 +60,55 @@ services:
       interval: 20s
       timeout: 5s
       retries: 3
+    networks:
+      - zets
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgres://zets:zets_dev_password@postgres:5432/zets_dev
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change_me_in_production}
+      CORS_ORIGIN: http://localhost:3000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zets
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3001/api/tenders?status=Published || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_BASE_URL: http://api:3001/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - zets
+
+networks:
+  zets:
+    driver: bridge
 
 volumes:
   postgres-data:

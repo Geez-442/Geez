@@ -16,6 +16,19 @@ See also:
 - `docs/COMPLIANCE_MATRIX.md` — PRAZ/PPDPA requirement mapping
 - `docs/FINAL_HARDENING.md` — security controls and production roadmap
 - `docs/DISSERTATION_OUTLINE.md` — chapter-by-chapter dissertation structure
+- `docs/PRODUCTION_READINESS.md` — Docker, LLM activation, and Playwright E2E tests
+
+## Running in production
+
+```bash
+cp .env.example .env
+# edit .env with real secrets
+docker compose up --build -d
+```
+
+Then visit `http://localhost:3000`.
+
+For activating ZETA with a real LLM, see `docs/PRODUCTION_READINESS.md`.
 
 See:
 - `PROJECT_BLUEPRINT.md` for the original sprint plan and system prompts.
