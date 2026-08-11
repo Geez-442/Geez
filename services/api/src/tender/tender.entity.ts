@@ -47,6 +47,18 @@ export class Tender {
   @Column({ nullable: true })
   publishedBy!: string | null;
 
+  @Column({ nullable: true })
+  awardedBidId!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  awardDecisionNote!: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  awardedAt!: Date | null;
+
+  @Column({ default: false })
+  awardAnnounced!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

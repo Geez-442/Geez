@@ -1,20 +1,22 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-
-// DataSource configuration for TypeORM. Uses DATABASE_URL if present.
-// This file intentionally keeps configuration simple for Sprint 1.
+import { User } from './entities/user.entity';
+import { Tender } from './tender/tender.entity';
+import { Bid } from './bid/bid.entity';
+import { AuditLog } from './audit/audit.entity';
+import { ZetaInteraction } from './ai/zeta.entity';
+import { AnomalyFlag } from './anomaly/anomaly-flag.entity';
 
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://zets:zets_dev_password@localhost:5432/zets_dev';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: DATABASE_URL,
-  synchronize: true, // For development only. Use migrations in production.
+  synchronize: true,
   logging: false,
-  entities: [__dirname + '/entities/*.{ts,js}'],
+  entities: [User, Tender, Bid, AuditLog, ZetaInteraction, AnomalyFlag],
 });
 
-// Export a helper to initialize the connection
 export async function initializeDataSource() {
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();

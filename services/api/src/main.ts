@@ -1,25 +1,22 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import { initializeDataSource } from './data-source';
-import authRouter from './auth/auth.controller';
-
-const PORT = process.env.PORT || 3001;
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  await initializeDataSource();
-  const app = express();
-  app.use(bodyParser.json());
+  const app = await NestFactory.create(AppModule);
 
-  // Mount auth routes (legacy express router retained for backward compatibility). If null, skip.
-  if (authRouter) {
-    app.use('/auth', authRouter as any);
-  }
-
-  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-
-  app.listen(PORT, () => {
-    console.log(`ZETS API (Sprint 1 scaffold) listening on port ${PORT}`);
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+  app.enableCors({
+    origin: corsOrigin.split(',').map((o) => o.trim()),
+    credentials: true,
   });
+
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+  console.log(`ZETS NestJS API listening on port ${port}`);
 }
 
 bootstrap().catch((err) => {
