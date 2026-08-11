@@ -229,7 +229,7 @@ export default function HomePage() {
     try {
       const payload = await apiRequest('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(loginForm),
+        body: JSON.stringify({ email: loginForm.email, password: loginForm.password }),
       });
       const nextSession = { token: payload.token, user: payload.user };
       setSession(nextSession);
