@@ -13,6 +13,7 @@ Current status:
 - Sprint 7+ — Final hardening, compliance matrix, dissertation outline ✅
 
 See also:
+- `docs/PROJECT_COMPLETE.md` — final deliverables, verification, and run instructions
 - `docs/COMPLIANCE_MATRIX.md` — PRAZ/PPDPA requirement mapping
 - `docs/FINAL_HARDENING.md` — security controls and production roadmap
 - `docs/DISSERTATION_OUTLINE.md` — chapter-by-chapter dissertation structure

@@ -1,28 +1,52 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  lint-and-test:
+  api:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20]
+    defaults:
+      run:
+        working-directory: services/api
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies (root)
-        run: |
-          echo "No root-level install configured in Sprint 0"
-      - name: Lint (placeholder)
-        run: |
-          echo "Add ESLint step in Sprint 1"
-      - name: Install and test services/api (placeholder)
-        run: |
-          echo "Installing and testing services/api"
-          cd services/api || exit 1
-          npm install
-          npm test
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm test
+      - name: Audit
+        run: npm audit --audit-level=moderate
+
+  web:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Audit
+        run: npm audit --audit-level=moderate
