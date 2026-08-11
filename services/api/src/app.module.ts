@@ -9,6 +9,7 @@ import { AuditModule } from './audit/audit.module';
 import { EvaluationModule } from './evaluation/evaluation.module';
 import { AiModule } from './ai/ai.module';
 import { AnomalyModule } from './anomaly/anomaly.module';
+import { PublicModule } from './public/public.module';
 import { User } from './entities/user.entity';
 import { Tender } from './tender/tender.entity';
 import { Bid } from './bid/bid.entity';
@@ -33,6 +34,7 @@ import { ThrottleGuard } from './guards/throttle.guard';
     EvaluationModule,
     AiModule,
     AnomalyModule,
+    PublicModule,
   ],
   providers: [
     {

@@ -9,7 +9,7 @@ Current status:
 - Sprint 3 — Secure bid vault (AES-256 encryption, time-lock sealing, COI, hash-chain audit log) ✅
 - Sprint 4 — ZETA AI advisory service (advisory-only mock adapter, role-differentiated guidance, auditable interactions) ✅
 - Sprint 5 — Anomaly detection (rule-based audit-log scanner, synthetic data generator, advisory flags) ✅
-- Sprint 6 — Offline PWA + public dashboard ⏳
+- Sprint 6 — Offline PWA + public dashboard ✅
 - Sprint 7+ — Final hardening, compliance matrix, dissertation write-up ⏳
 
 See:

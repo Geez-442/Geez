@@ -552,6 +552,21 @@ export default function HomePage() {
           >
             Public transparency
           </a>
+          <a
+            href="/offline/bid-draft"
+            style={{
+              background: 'rgba(30, 41, 59, 0.8)',
+              color: '#e5eefc',
+              border: '1px solid rgba(148, 163, 184, 0.24)',
+              borderRadius: 14,
+              padding: '10px 16px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              display: 'inline-block',
+            }}
+          >
+            Offline draft
+          </a>
         </div>
       </nav>
       <section style={{ maxWidth: 1240, margin: '0 auto' }}>
