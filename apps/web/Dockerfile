@@ -9,6 +9,10 @@ WORKDIR /app
 ARG NEXT_PUBLIC_API_BASE_URL=/api
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
+# Build-time server-side proxy target (API container URL inside Docker network)
+ARG API_PROXY_URL=http://api:3001/api
+ENV API_PROXY_URL=${API_PROXY_URL}
+
 COPY package*.json ./
 RUN npm ci
 

@@ -765,8 +765,12 @@ export default function HomePage() {
                     onChange={(event) => setRegisterForm((current) => ({ ...current, prazVendorNumber: event.target.value }))}
                     style={inputStyle}
                     type="text"
+                    minLength={5}
                     required
                   />
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                    Must be at least 5 characters (e.g. PRAZ-12345).
+                  </span>
                 </label>
               ) : null}
               <button type="submit" disabled={loading} style={secondaryButtonStyle}>
