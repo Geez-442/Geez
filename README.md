@@ -10,7 +10,12 @@ Current status:
 - Sprint 4 — ZETA AI advisory service (advisory-only mock adapter, role-differentiated guidance, auditable interactions) ✅
 - Sprint 5 — Anomaly detection (rule-based audit-log scanner, synthetic data generator, advisory flags) ✅
 - Sprint 6 — Offline PWA + public dashboard ✅
-- Sprint 7+ — Final hardening, compliance matrix, dissertation write-up ⏳
+- Sprint 7+ — Final hardening, compliance matrix, dissertation outline ✅
+
+See also:
+- `docs/COMPLIANCE_MATRIX.md` — PRAZ/PPDPA requirement mapping
+- `docs/FINAL_HARDENING.md` — security controls and production roadmap
+- `docs/DISSERTATION_OUTLINE.md` — chapter-by-chapter dissertation structure
 
 See:
 - `PROJECT_BLUEPRINT.md` for the original sprint plan and system prompts.

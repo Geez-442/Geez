@@ -3,6 +3,8 @@ import { BidService } from './bid.service';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../auth.stub';
 import { RolesGuard } from '../guards/roles.guard.nest';
+import { CreateBidDto } from '../dto/create-bid.dto';
+import { SealBidDto } from '../dto/seal-bid.dto';
 
 /**
  * BidController exposes secure bid management endpoints.
@@ -19,12 +21,8 @@ export class BidController {
    */
   @Post()
   @Roles(Role.Supplier)
-  async create(@Body() body: any, @Req() req: any) {
-    const { tenderId, amount, coiData } = body;
-    if (!tenderId || amount === undefined) {
-      throw new ForbiddenException('tenderId and amount required');
-    }
-    return this.bidService.createDraft(tenderId, req.user.id, amount, coiData);
+  async create(@Body() body: CreateBidDto, @Req() req: any) {
+    return this.bidService.createDraft(body.tenderId, req.user.id, body.amount, body.coiData);
   }
 
   /**
@@ -33,10 +31,7 @@ export class BidController {
    */
   @Post(':id/seal')
   @Roles(Role.Supplier)
-  async sealBid(@Param('id') id: string, @Body() body: any, @Req() req: any) {
-    if (!body.coiDeclaration) {
-      throw new ForbiddenException('coiDeclaration required to seal bid');
-    }
+  async sealBid(@Param('id') id: string, @Body() body: SealBidDto, @Req() req: any) {
     return this.bidService.sealBid(id, req.user.id, body.coiDeclaration);
   }
 

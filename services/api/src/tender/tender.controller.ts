@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Query, Param, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, UseGuards, Req } from '@nestjs/common';
 import { TenderService } from './tender.service';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../auth.stub';
 import { RolesGuard } from '../guards/roles.guard.nest';
+import { CreateTenderDto } from '../dto/create-tender.dto';
 
 @Controller('tenders')
 @UseGuards(RolesGuard)
@@ -11,9 +12,7 @@ export class TenderController {
 
   @Post()
   @Roles(Role.PMU_Officer, Role.PRAZ_Regulator)
-  async create(@Body() body: any, @Req() req: any) {
-    // Lightweight validation: title and tenderType required
-    if (!body.title || !body.tenderType) throw new ForbiddenException('title and tenderType required');
+  async create(@Body() body: CreateTenderDto, @Req() req: any) {
     return this.tenderService.create(body, req.user.id, req.user.role);
   }
 

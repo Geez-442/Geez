@@ -1,17 +1,34 @@
 import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthServiceNest } from './auth.service.nest';
 import { Role } from '../auth.stub';
+import { IsEmail, IsString, MinLength, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
 
 class RegisterDto {
+  @IsEmail()
   email!: string;
+
+  @IsString()
+  @MinLength(8)
   password!: string;
+
+  @IsEnum(Role)
   role!: Role;
+
+  @IsOptional()
+  @IsString()
   displayName?: string;
+
+  @IsOptional()
+  @IsString()
   prazVendorNumber?: string;
 }
 
 class LoginDto {
+  @IsEmail()
   email!: string;
+
+  @IsString()
+  @MinLength(6)
   password!: string;
 }
 

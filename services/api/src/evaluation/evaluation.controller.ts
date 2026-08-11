@@ -4,6 +4,7 @@ import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../auth.stub';
 import { RolesGuard } from '../guards/roles.guard.nest';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AwardTenderDto } from '../dto/award-tender.dto';
 
 @Controller('evaluation')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +27,7 @@ export class EvaluationController {
   @Roles(Role.PMU_Officer)
   async award(
     @Param('id') id: string,
-    @Body() body: { awardedBidId: string; awardDecisionNote: string },
+    @Body() body: AwardTenderDto,
     @Req() req: any,
   ) {
     return this.evaluationService.awardTender(
