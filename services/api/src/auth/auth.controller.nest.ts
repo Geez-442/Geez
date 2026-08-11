@@ -43,9 +43,6 @@ export class AuthControllerNest {
       if (!email || !password || !role) {
         throw new HttpException('email, password and role are required', HttpStatus.BAD_REQUEST);
       }
-      if (role === Role.PRAZ_Regulator && !prazVendorNumber) {
-        throw new HttpException('prazVendorNumber required for PRAZ_Regulator in prototype', HttpStatus.BAD_REQUEST);
-      }
       const user = await this.authService.register(email, password, role, displayName, prazVendorNumber);
       return { status: 'ok', user };
     } catch (err: any) {

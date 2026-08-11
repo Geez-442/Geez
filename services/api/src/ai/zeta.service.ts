@@ -6,6 +6,7 @@ import { ZETA_KNOWLEDGE_BASE } from './knowledge-base';
 import { Role } from '../auth.stub';
 import { AuditLog } from '../audit/audit.entity';
 import { computeChainHash } from '../crypto/hash-chain';
+import { composeAnswerWithLangChain } from './zeta.langchain';
 
 export interface ZetaQuery {
   role: Role;
@@ -99,18 +100,21 @@ export class ZetaService {
     const matches = this.findMatches(role, query);
     const insufficientData = matches.length === 0;
 
-    let answer: string;
+    let fallbackAnswer: string;
     let sources: string[] = [];
     let matchedEntryIds: string[] = matches.map((m) => m.id);
 
     if (insufficientData) {
-      answer = 'INSUFFICIENT DATA — ESCALATE TO HUMAN. ZETA could not find a relevant, role-appropriate guidance entry for your query. Please contact the procurement helpdesk or your PMU officer.';
+      fallbackAnswer = 'INSUFFICIENT DATA — ESCALATE TO HUMAN. ZETA could not find a relevant, role-appropriate guidance entry for your query. Please contact the procurement helpdesk or your PMU officer.';
     } else {
       // Compose a concise answer from matched entries, deduplicating sources.
       const paragraphs = matches.map((m) => `${m.title}\n${m.content}`);
       sources = Array.from(new Set(matches.flatMap((m) => m.sources)));
-      answer = `${paragraphs.join('\n\n')}\n\nDISCLAIMER: This guidance is advisory only and does not replace the PPDPA Act, PRAZ regulations, or professional legal advice.`;
+      fallbackAnswer = `${paragraphs.join('\n\n')}\n\nDISCLAIMER: This guidance is advisory only and does not replace the PPDPA Act, PRAZ regulations, or professional legal advice.`;
     }
+
+    // Route the grounded answer through the LangChain prompt/template pipeline.
+    const answer = await composeAnswerWithLangChain(role, query, matches, fallbackAnswer);
 
     const interaction = await this.interactionRepo.save({
       actorId,

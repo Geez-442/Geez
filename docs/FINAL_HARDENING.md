@@ -37,6 +37,21 @@ This document summarises the security controls added in the final hardening pass
    - ZETA is advisory-only; it never decrypts bids or changes tender state.
    - All answers are sourced from a curated knowledge base with explicit citations.
 
+9. **LangChain-based ZETA pipeline** (`services/api/src/ai/zeta.langchain.ts`)
+   - Domain-specific PRAZ prompt template that instructs the model to use only verified context and to escalate when insufficient.
+   - Deterministic `FakeLLM` stand-in for offline/research use; can be swapped for `ChatOpenAI` or a local Ollama model in production.
+
+10. **Mandatory PRAZ vendor / entity verification** (`services/api/src/auth/auth.service.nest.ts`)
+    - All Supplier, PMU Officer, and PRAZ Regulator registrations must provide a `prazVendorNumber` that passes structural validation.
+    - Public Observer accounts are exempt.
+
+11. **Role-differentiated web portals**
+    - `/supplier` — browse tenders, create draft bids, seal bids, ZETA supplier guidance.
+    - `/pmu` — create/publish tenders, review and award tenders, anomaly flags, audit events, ZETA PMU guidance.
+    - `/praz` — full audit trail, anomaly scan/flag review, transparency stats, ZETA regulator guidance.
+    - `/public` — unauthenticated transparency dashboard.
+    - `/offline/bid-draft` — localStorage-backed offline bid drafting with sync.
+
 ## Production roadmap
 
 | Priority | Task | Rationale |

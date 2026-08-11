@@ -287,7 +287,7 @@ export default function HomePage() {
         password,
         displayName,
         role,
-        prazVendorNumber: role === 'PRAZ_Regulator' ? prazVendorNumber : undefined,
+        prazVendorNumber: role === 'Public_Observer' ? undefined : prazVendorNumber,
       };
 
       await apiRequest('/auth/register', {
@@ -670,7 +670,6 @@ export default function HomePage() {
                   >
                     <option value="Supplier">Supplier</option>
                     <option value="PMU_Officer">PMU Officer</option>
-                    <option value="Evaluator">Evaluator</option>
                     <option value="PRAZ_Regulator">PRAZ Regulator</option>
                     <option value="Public_Observer">Public Observer</option>
                   </select>
@@ -752,21 +751,21 @@ export default function HomePage() {
                   >
                     <option value="Supplier">Supplier</option>
                     <option value="PMU_Officer">PMU Officer</option>
-                    <option value="Evaluator">Evaluator</option>
                     <option value="PRAZ_Regulator">PRAZ Regulator</option>
                     <option value="Public_Observer">Public Observer</option>
                   </select>
                 </label>
               </div>
-              {registerForm.role === 'PRAZ_Regulator' ? (
+              {registerForm.role !== 'Public_Observer' ? (
                 <label style={{ display: 'grid', gap: 6 }}>
-                  <span style={labelStyle}>PRAZ vendor number</span>
+                  <span style={labelStyle}>PRAZ vendor / entity number</span>
                   <input
                     name="prazVendorNumber"
                     value={registerForm.prazVendorNumber}
                     onChange={(event) => setRegisterForm((current) => ({ ...current, prazVendorNumber: event.target.value }))}
                     style={inputStyle}
                     type="text"
+                    required
                   />
                 </label>
               ) : null}
