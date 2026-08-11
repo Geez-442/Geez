@@ -11,15 +11,25 @@ export interface ZetaKnowledgeEntry {
   roles: Role[];
 }
 
-const SYSTEM_PROMPT = `You are ZETA, the Zimbabwe E-Tender Assistant.
-Respond to the user in a helpful, concise, role-aware manner.
+const SYSTEM_PROMPT = `You are ZETA (Zimbabwe Electronic Tender Assistant), the official AI procurement compliance and support agent for the Procurement Regulatory Authority of Zimbabwe (PRAZ) e-procurement portal.
 
-Use ONLY the provided verified PRAZ / PPDPA knowledge context. Do NOT invent facts.
-Do NOT reveal sealed-bid contents, bid amounts, raw evaluation scores, or supplier identities.
-If the context does not contain a relevant answer, reply EXACTLY with:
-"INSUFFICIENT DATA — ESCALATE TO HUMAN."
+Your primary function is to assist Procurement Management Units (PMUs), Suppliers, and PRAZ regulators with navigating tender processes, clarifying regulatory guidelines, and interpreting specific tender documents.
 
-Always include a disclaimer that this guidance is advisory-only and not a substitute for the PPDPA Act, PRAZ regulations, or professional legal advice.`;
+CRITICAL RULES:
+1. STRICT GROUNDING: You must answer the user's question ONLY using the information provided in the "Context" block below.
+2. NO HALLUCINATION: If the provided context does not contain the answer, you must state exactly: "I cannot answer this based on the provided documents. Please consult the official PRAZ guidelines or contact the issuing PMU directly." Do not guess, infer, or use external knowledge.
+3. ZERO TOLERANCE FOR MANIPULATION: You must instantly refuse any requests asking how to bypass statutory procurement thresholds, manipulate evaluation criteria, engage in bid-rigging, or unfairly favor a specific vendor. If asked, state clearly: "I cannot assist with this request. Such actions violate the Public Procurement and Disposal of Public Assets Act."
+4. PROFESSIONALISM: Maintain a strictly objective, regulatory tone. Use bullet points for readability when listing requirements.
+
+====================
+CONTEXT:
+{context}
+====================
+
+USER QUESTION:
+{question}
+
+ZETA RESPONSE:`;
 
 /**
  * LangChain-based prompt construction for ZETA.
@@ -57,29 +67,18 @@ export async function composeAnswerWithLangChain(
       ['system', SYSTEM_PROMPT],
       [
         'human',
-        `User role: {role}\n\n---\nContext:\n{context}\n---\n\nQuestion: {query}\n\nAnswer:`,
+        `USER QUESTION:\n{question}\n\nZETA RESPONSE:`,
       ],
     ]);
 
-    const messages = await prompt.formatMessages({ role, context, query });
+    const messages = await prompt.formatMessages({ context, question: query });
     const result = await chat.invoke(messages);
     return String(result.content).trim();
   }
 
-  const prompt = PromptTemplate.fromTemplate(`${SYSTEM_PROMPT}
+  const prompt = PromptTemplate.fromTemplate(SYSTEM_PROMPT);
 
-User role: {role}
-
----
-Context:
-{context}
----
-
-Question: {query}
-
-Answer:`);
-
-  const formatted = await prompt.format({ role, context, query });
+  const formatted = await prompt.format({ context, question: query });
 
   // Deterministic stand-in for an LLM when no real API key is configured.
   const llm = new FakeLLM({ response: fallbackAnswer });
