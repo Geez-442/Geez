@@ -30,6 +30,9 @@ dist/
 
 # Misc
 coverage/
+*.zip
+*.tar.gz
+*.7z
 
 # Docker
 docker-compose.override.yml
