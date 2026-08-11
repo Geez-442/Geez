@@ -66,13 +66,21 @@ This document summarises the security controls added in the final hardening pass
 | Low | SMS gateway integration (Africa’s Talking) | Rural accessibility |
 | Low | Usability testing with Zimbabwean SMEs and PRAZ stakeholders | Validate accessibility claims |
 
+## Dependency audit remediation
+
+- `services/api` upgraded to NestJS 11 (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/jwt`, `@nestjs/passport`, `@nestjs/testing`) and `@langchain/core@^1.2.3`.
+- `apps/web` added direct `postcss@^8.5.23` and `sharp@^0.35.0` dev dependencies plus `overrides` under `next` to force patched transitive packages.
+- `npm audit` now reports **0 vulnerabilities** in both workspaces.
+
 ## Verification commands
 
 ```bash
 cd services/api
+npm audit
 npm run build
 npm test
 
 cd ../web
+npm audit
 npm run build
 ```
