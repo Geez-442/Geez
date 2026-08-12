@@ -21,7 +21,10 @@ export async function apiRequest(path, options = {}) {
     } else if (payload?.message) {
       message = payload.message;
     }
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
   }
 
   return payload;

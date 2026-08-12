@@ -1,6 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { Role } from '../auth.stub';
 
+export enum UserStatus {
+  PENDING = 'PENDING_APPROVAL',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -20,6 +26,9 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   prazVendorNumber!: string | null;
+
+  @Column({ type: 'text', default: UserStatus.PENDING })
+  status!: UserStatus;
 
   @CreateDateColumn()
   createdAt!: Date;

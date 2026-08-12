@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../entities/user.entity';
+import { User, UserStatus } from '../entities/user.entity';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Role } from '../auth.stub';
@@ -29,9 +29,22 @@ export class AuthServiceNest {
     }
 
     const hash = await bcrypt.hash(password, 10);
-    const user = this.userRepo.create({ email, passwordHash: hash, role, displayName, prazVendorNumber: prazVendorNumber?.trim() });
+    const user = this.userRepo.create({
+      email,
+      passwordHash: hash,
+      role,
+      displayName,
+      prazVendorNumber: prazVendorNumber?.trim(),
+      status: UserStatus.PENDING,
+    });
     await this.userRepo.save(user);
-    return { id: user.id, email: user.email, role: user.role, prazVendorNumber: user.prazVendorNumber };
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      prazVendorNumber: user.prazVendorNumber,
+      status: user.status,
+    };
   }
 
   async validateUser(email: string, password: string) {
@@ -43,8 +56,32 @@ export class AuthServiceNest {
 
   generateJwt(user: User) {
     const secret = process.env.JWT_SECRET || 'dev_jwt_secret';
-    const payload = { sub: user.id, role: user.role };
+    const payload = { sub: user.id, role: user.role, status: user.status };
     const token = jwt.sign(payload, secret, { expiresIn: '2h' });
     return token;
+  }
+
+  /** List all users pending admin approval */
+  async listPendingUsers() {
+    return this.userRepo.find({ where: { status: UserStatus.PENDING }, order: { createdAt: 'DESC' } });
+  }
+
+  /** Approve a user registration — called by PRAZ administrator */
+  async approveUser(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+    if (user.status === UserStatus.APPROVED) throw new Error('User already approved');
+    user.status = UserStatus.APPROVED;
+    await this.userRepo.save(user);
+    return { id: user.id, email: user.email, role: user.role, status: user.status };
+  }
+
+  /** Reject a user registration — called by PRAZ administrator */
+  async rejectUser(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+    user.status = UserStatus.REJECTED;
+    await this.userRepo.save(user);
+    return { id: user.id, email: user.email, role: user.role, status: user.status };
   }
 }

@@ -1,39 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  colors,
+  cardStyle,
+  glassPanelStyle,
+  inputStyle,
+  labelStyle,
+  primaryButtonStyle,
+  secondaryButtonStyle,
+  eyebrowStyle,
+  badgeStyle,
+  successBadgeStyle,
+} from '../../components/styles';
+import AiFormAssist from '../../components/AiFormAssist';
+import ZetaFloatingBot from '../../components/ZetaFloatingBot';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 const STORAGE_KEY = 'zets-offline-bid-drafts';
-
-const cardStyle = {
-  background: 'rgba(8, 15, 32, 0.72)',
-  border: '1px solid rgba(148, 163, 184, 0.16)',
-  borderRadius: 20,
-  boxShadow: '0 18px 44px rgba(0, 0, 0, 0.3)',
-  backdropFilter: 'blur(14px)',
-  padding: 20,
-};
-
-const inputStyle = {
-  background: 'rgba(15, 23, 42, 0.9)',
-  border: '1px solid rgba(148, 163, 184, 0.2)',
-  borderRadius: 12,
-  padding: '10px 14px',
-  color: '#e5eefc',
-  fontSize: 14,
-  outline: 'none',
-  width: '100%',
-};
-
-const buttonStyle = {
-  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: 14,
-  padding: '12px 16px',
-  fontWeight: 600,
-  cursor: 'pointer',
-};
 
 export default function OfflineBidDraftPage() {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -67,24 +52,17 @@ export default function OfflineBidDraftPage() {
       if (saved) setSession(JSON.parse(saved));
       const savedDrafts = window.localStorage.getItem(STORAGE_KEY);
       if (savedDrafts) setDrafts(JSON.parse(savedDrafts));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [drafts]);
 
   function parseAffiliations(value) {
-    return value
-      .split(',')
-      .map((v) => v.trim())
-      .filter(Boolean);
+    return value.split(',').map((v) => v.trim()).filter(Boolean);
   }
 
   function handleSubmit(event) {
@@ -139,15 +117,8 @@ export default function OfflineBidDraftPage() {
       try {
         const response = await fetch(`${API_BASE_URL}/bids`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.token}`,
-          },
-          body: JSON.stringify({
-            tenderId: draft.tenderId,
-            amount: draft.amount,
-            coiData: draft.coiData,
-          }),
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+          body: JSON.stringify({ tenderId: draft.tenderId, amount: draft.amount, coiData: draft.coiData }),
         });
         if (response.ok) {
           syncedCount += 1;
@@ -172,150 +143,156 @@ export default function OfflineBidDraftPage() {
   const sortedDrafts = useMemo(() => [...drafts].sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)), [drafts]);
 
   return (
-    <main style={{ minHeight: '100vh', padding: '40px 20px 64px' }}>
-      <nav style={{ maxWidth: 800, margin: '0 auto 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: 1, color: '#7dd3fc' }}>ZETS</div>
-        <a href="/" style={{ color: '#93c5fd', textDecoration: 'none', fontWeight: 600 }}>← Back to portal</a>
+    <main style={{ minHeight: '100vh', background: colors.onyx, padding: '0 0 80px' }}>
+      {/* Nav */}
+      <nav style={{ maxWidth: 900, margin: '0 auto', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: colors.deepForest, border: `1px solid ${colors.donkeyBrown}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: colors.champagne }}>Z</div>
+          <span style={{ fontWeight: 700, fontSize: 16, color: colors.ivory }}>Offline Bid Draft</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span
+            style={{
+              borderRadius: 999,
+              padding: '4px 12px',
+              fontSize: 11,
+              fontWeight: 600,
+              background: isOnline ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+              color: isOnline ? '#86efac' : '#fbbf24',
+              border: `1px solid ${isOnline ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`,
+            }}
+          >
+            {isOnline ? '● Online' : '● Offline'}
+          </span>
+          <Link href="/" style={{ ...badgeStyle, textDecoration: 'none', fontSize: 13, padding: '8px 16px' }}>← Back to portal</Link>
+        </div>
       </nav>
 
-      <section style={{ maxWidth: 800, margin: '0 auto', display: 'grid', gap: 20 }}>
-        <div style={{ ...cardStyle, borderRadius: 28, padding: 28 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-            <div>
-              <p style={{ letterSpacing: 4, textTransform: 'uppercase', color: '#7dd3fc', fontSize: 12, marginTop: 0 }}>
-                Offline workspace
-              </p>
-              <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.1, margin: '8px 0 0' }}>
-                Bid draft editor
-              </h1>
-            </div>
-            <span
-              style={{
-                borderRadius: 999,
-                padding: '6px 12px',
-                fontSize: 12,
-                fontWeight: 600,
-                background: isOnline ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
-                color: isOnline ? '#4ade80' : '#fbbf24',
-              }}
-            >
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
-          </div>
-
-          <p style={{ color: '#b7c6e3', lineHeight: 1.6, marginBottom: 24 }}>
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px', display: 'grid', gap: 24 }}>
+        {/* Hero */}
+        <div className="glass-panel" style={{ ...glassPanelStyle, borderRadius: 28, padding: 32 }}>
+          <p style={{ ...eyebrowStyle, color: colors.champagne }}>Offline Workspace</p>
+          <h1 style={{ fontSize: 'clamp(28px, 4vw, 44px)', lineHeight: 1.1, margin: '8px 0 0', color: colors.ivory, fontWeight: 800 }}>
+            Bid draft editor
+          </h1>
+          <p style={{ color: colors.donkeyBrown, lineHeight: 1.6, marginTop: 12, maxWidth: 600 }}>
             Compose bid drafts even without a connection. Drafts are stored on this device and can be synced to the
             ZETS API once you are signed in and online. No sealed data is transmitted until you choose to sync.
           </p>
+        </div>
 
-          {message && (
-            <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.24)', borderRadius: 14, padding: 14, color: '#bbf7d0', marginBottom: 16 }}>
-              {message}
-            </div>
-          )}
-          {error && (
-            <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.24)', borderRadius: 14, padding: 14, color: '#fecaca', marginBottom: 16 }}>
-              {error}
-            </div>
-          )}
+        {/* Messages */}
+        {message && (
+          <div className="fade-in-up" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 14, padding: 14, color: '#86efac', fontSize: 13 }}>
+            {message}
+          </div>
+        )}
+        {error && (
+          <div className="fade-in-up" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 14, padding: 14, color: '#fca5a5', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 16 }}>
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label style={{ fontSize: 14, color: '#cbd5e1' }}>Tender ID</label>
-              <input
-                value={form.tenderId}
-                onChange={(e) => setForm((c) => ({ ...c, tenderId: e.target.value }))}
-                style={inputStyle}
-                placeholder="e.g. tender-uuid-123"
-                required
-              />
-            </div>
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label style={{ fontSize: 14, color: '#cbd5e1' }}>Bid amount</label>
-              <input
-                type="number"
-                min="1"
-                value={form.amount}
-                onChange={(e) => setForm((c) => ({ ...c, amount: e.target.value }))}
-                style={inputStyle}
-                placeholder="e.g. 95000"
-                required
-              />
-            </div>
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label style={{ fontSize: 14, color: '#cbd5e1' }}>Company name</label>
-              <input
-                value={form.company}
-                onChange={(e) => setForm((c) => ({ ...c, company: e.target.value }))}
-                style={inputStyle}
-                required
-              />
-            </div>
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label style={{ fontSize: 14, color: '#cbd5e1' }}>Known conflicts</label>
-              <input
-                value={form.conflicts}
-                onChange={(e) => setForm((c) => ({ ...c, conflicts: e.target.value }))}
-                style={inputStyle}
-              />
-            </div>
-            <div style={{ display: 'grid', gap: 6 }}>
-              <label style={{ fontSize: 14, color: '#cbd5e1' }}>Affiliations (comma-separated)</label>
-              <input
-                value={form.affiliations}
-                onChange={(e) => setForm((c) => ({ ...c, affiliations: e.target.value }))}
-                style={inputStyle}
-                placeholder="Chamber of Commerce, Industry Association"
-              />
-            </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
-              <button type="submit" style={buttonStyle}>
-                Save draft locally
+        {/* Form */}
+        <div className="glass-card fade-in-up" style={{ borderRadius: 24, padding: 28 }}>
+          <h2 style={{ margin: '0 0 20px', fontSize: 18, color: colors.ivory }}>New Bid Draft</h2>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <AiFormAssist
+              label="Tender ID"
+              name="tenderId"
+              value={form.tenderId}
+              onChange={(e) => setForm((c) => ({ ...c, tenderId: e.target.value }))}
+              placeholder="e.g. PRAZ-2026-XXXX"
+              required
+              aiMode="tender-id"
+              helpText="Paste the tender UUID from the supplier portal."
+            />
+            <AiFormAssist
+              label="Bid Amount"
+              name="amount"
+              type="number"
+              value={form.amount}
+              onChange={(e) => setForm((c) => ({ ...c, amount: e.target.value }))}
+              placeholder="e.g. 95000"
+              required
+              aiMode="currency"
+            />
+            <AiFormAssist
+              label="Company Name"
+              name="company"
+              value={form.company}
+              onChange={(e) => setForm((c) => ({ ...c, company: e.target.value }))}
+              placeholder="Your registered company name"
+              required
+              aiMode="title"
+            />
+            <AiFormAssist
+              label="Known Conflicts"
+              name="conflicts"
+              value={form.conflicts}
+              onChange={(e) => setForm((c) => ({ ...c, conflicts: e.target.value }))}
+              placeholder="Declare any conflicts of interest"
+              aiMode="default"
+            />
+            <AiFormAssist
+              label="Affiliations (comma-separated)"
+              name="affiliations"
+              value={form.affiliations}
+              onChange={(e) => setForm((c) => ({ ...c, affiliations: e.target.value }))}
+              placeholder="Chamber of Commerce, Industry Association"
+              aiMode="default"
+            />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}>
+              <button type="submit" style={{ ...primaryButtonStyle, flex: 1, minWidth: 180 }}>
+                Save Draft Locally
               </button>
               <button
                 type="button"
                 onClick={syncDrafts}
                 disabled={syncing || drafts.length === 0}
                 style={{
-                  ...buttonStyle,
-                  background: 'rgba(30, 41, 59, 0.8)',
-                  border: '1px solid rgba(148, 163, 184, 0.24)',
-                  color: '#e5eefc',
-                  opacity: syncing || drafts.length === 0 ? 0.6 : 1,
+                  ...secondaryButtonStyle,
+                  opacity: syncing || drafts.length === 0 ? 0.5 : 1,
+                  minWidth: 180,
                 }}
               >
-                {syncing ? 'Syncing…' : `Sync ${drafts.length} draft${drafts.length === 1 ? '' : 's'}`}
+                {syncing ? 'Syncing…' : `Sync ${drafts.length} Draft${drafts.length === 1 ? '' : 's'}`}
               </button>
             </div>
           </form>
         </div>
 
-        <div style={cardStyle}>
-          <h2 style={{ marginTop: 0, marginBottom: 16, fontSize: 20 }}>Saved drafts</h2>
+        {/* Saved drafts */}
+        <div className="glass-card fade-in-up" style={{ borderRadius: 24, padding: 28 }}>
+          <h2 style={{ margin: '0 0 16px', fontSize: 18, color: colors.ivory }}>
+            Saved Drafts {drafts.length > 0 && <span style={badgeStyle}>{drafts.length} local</span>}
+          </h2>
           {sortedDrafts.length === 0 ? (
-            <p style={{ color: '#94a3b8' }}>No local drafts yet.</p>
+            <p style={{ color: colors.donkeyBrown }}>No local drafts yet. Create one above.</p>
           ) : (
             <div style={{ display: 'grid', gap: 12 }}>
               {sortedDrafts.map((draft) => (
-                <div key={draft.id} style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 14, padding: 16 }}>
+                <div key={draft.id} className="glass-card" style={{ padding: 16, borderRadius: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <strong style={{ color: '#e5eefc' }}>{draft.tenderId}</strong>
-                    <span style={{ color: '#93c5fd', fontSize: 13 }}>{draft.amount.toLocaleString('en-GB')}</span>
+                    <strong style={{ color: colors.ivory, fontFamily: 'monospace', fontSize: 13 }}>{draft.tenderId}</strong>
+                    <span style={{ color: colors.champagne, fontSize: 13, fontWeight: 600 }}>
+                      {draft.amount.toLocaleString('en-US')}
+                    </span>
                   </div>
-                  <div style={{ color: '#b7c6e3', fontSize: 14, marginBottom: 4 }}>{draft.coiData?.company}</div>
-                  <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8 }}>
+                  <div style={{ color: colors.donkeyBrown, fontSize: 13, marginBottom: 4 }}>{draft.coiData?.company}</div>
+                  <div style={{ color: colors.donkeyBrown, fontSize: 11, marginBottom: 8 }}>
                     Saved {new Date(draft.savedAt).toLocaleString('en-GB')}
-                    {draft.lastError && <span style={{ color: '#f87171', marginLeft: 8 }}>— sync failed</span>}
+                    {draft.lastError && <span style={{ color: '#fca5a5', marginLeft: 8 }}>— sync failed</span>}
                   </div>
                   <button
                     type="button"
                     onClick={() => removeDraft(draft.id)}
                     style={{
                       background: 'transparent',
-                      border: '1px solid rgba(239,68,68,0.24)',
-                      color: '#fecaca',
+                      border: '1px solid rgba(239,68,68,0.3)',
+                      color: '#fca5a5',
                       borderRadius: 10,
-                      padding: '6px 12px',
+                      padding: '6px 14px',
                       fontSize: 12,
                       cursor: 'pointer',
                     }}
@@ -328,6 +305,8 @@ export default function OfflineBidDraftPage() {
           )}
         </div>
       </section>
+
+      <ZetaFloatingBot session={session} contextHint="offline" />
     </main>
   );
 }
