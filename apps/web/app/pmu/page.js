@@ -76,10 +76,16 @@ export default function PmuPortalPage() {
     setMessage('');
     try {
       const body = {
-        ...tenderForm,
+        title: tenderForm.title,
+        description: tenderForm.description || undefined,
+        tenderType: tenderForm.tenderType,
+        procuringEntity: tenderForm.procuringEntity,
         budget: tenderForm.budget ? Number(tenderForm.budget) : undefined,
+        currency: tenderForm.currency || 'ZWL',
         deadline: tenderForm.deadline ? new Date(tenderForm.deadline).toISOString() : undefined,
       };
+      // Strip undefined fields so the backend whitelist does not reject them
+      Object.keys(body).forEach((k) => body[k] === undefined && delete body[k]);
       await apiRequest('/tenders', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.token}` },

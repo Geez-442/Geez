@@ -13,7 +13,14 @@ export async function apiRequest(path, options = {}) {
   const payload = contentType.includes('application/json') ? await response.json() : await response.text();
 
   if (!response.ok) {
-    const message = typeof payload === 'string' ? payload : payload?.message || 'Request failed';
+    let message = 'Request failed';
+    if (typeof payload === 'string') {
+      message = payload;
+    } else if (Array.isArray(payload?.message)) {
+      message = payload.message.join('; ');
+    } else if (payload?.message) {
+      message = payload.message;
+    }
     throw new Error(message);
   }
 
