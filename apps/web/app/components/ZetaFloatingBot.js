@@ -36,11 +36,13 @@ export default function ZetaFloatingBot({ session, contextHint = '' }) {
     setLoading(true);
 
     try {
+      // Signed-in users get role-tailored guidance; visitors get public-scope guidance.
       const headers = { 'Content-Type': 'application/json' };
+      const endpoint = session?.token ? '/zeta/ask' : '/zeta/ask-public';
       if (session?.token) {
         headers.Authorization = `Bearer ${session.token}`;
       }
-      const payload = await apiRequest('/zeta/ask', {
+      const payload = await apiRequest(endpoint, {
         method: 'POST',
         headers,
         body: JSON.stringify({ query: prompt }),

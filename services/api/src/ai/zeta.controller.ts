@@ -1,18 +1,24 @@
 import { Controller, Post, Get, Body, Query, Req, UseGuards } from '@nestjs/common';
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
 import { ZetaService } from './zeta.service';
 import { Role } from '../auth.stub';
 import { Roles } from '../decorators/roles.decorator';
+import { Public } from '../decorators/public.decorator';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard.nest';
 
 class AskDto {
-  role!: Role;
+  @IsString()
+  @IsNotEmpty({ message: 'Please enter a question for ZETA' })
+  @MaxLength(1000, { message: 'Question is too long — please shorten it' })
   query!: string;
 }
 
 /**
  * ZETA (Zimbabwe E-Tender Assistant) controller.
- * All endpoints are authenticated; advisory answers are logged.
+ * Authenticated answers are tailored to the caller's verified role.
+ * An unauthenticated endpoint is exposed for the public transparency portal and
+ * the pre-login home page, scoped to Public_Observer guidance only.
  */
 @Controller('zeta')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -21,17 +27,29 @@ export class ZetaController {
 
   /**
    * Ask ZETA a procurement-related question.
-   * Body: { role: Role, query: string }
-   * The role in the body determines the tailored answer; auth still required.
+   * The caller's verified JWT role determines the tailored answer, never a body field.
    */
   @Post('ask')
   @Roles(Role.Supplier, Role.PMU_Officer, Role.PRAZ_Regulator, Role.Public_Observer)
   async ask(@Body() body: AskDto, @Req() req: any) {
-    // Prefer authenticated user details over body role to prevent spoofing
     const role = req.user.role as Role;
     return this.zetaService.ask({
       role,
       actorId: req.user.id,
+      query: body.query,
+    });
+  }
+
+  /**
+   * Unauthenticated advisory endpoint for the public portal and pre-login pages.
+   * Always answers with Public_Observer scope, so no role-restricted guidance leaks.
+   */
+  @Post('ask-public')
+  @Public()
+  async askPublic(@Body() body: AskDto) {
+    return this.zetaService.ask({
+      role: Role.Public_Observer,
+      actorId: 'anonymous',
       query: body.query,
     });
   }
