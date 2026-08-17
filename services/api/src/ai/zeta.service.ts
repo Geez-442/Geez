@@ -67,7 +67,46 @@ export class ZetaService {
   ]);
 
   /**
-   * Find knowledge entries matching the user's role and query keywords.
+   * Domain words that appear in nearly every knowledge entry. Matching on these
+   * alone is not evidence of relevance, so they score nothing on their own.
+   */
+  private LOW_SIGNAL_WORDS = new Set([
+    'procurement', 'tender', 'tenders', 'bid', 'bids', 'praz', 'zets', 'zeta', 'system',
+    'portal', 'public', 'supplier', 'suppliers', 'process', 'information', 'act',
+  ]);
+
+  /** Only the most relevant entries are used, to keep answers focused. */
+  private MAX_MATCHES = 3;
+
+  /** Escape a string for safe use inside a RegExp. */
+  private escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Test whether the query contains a keyword, respecting word boundaries.
+   * Without this, the single-word keyword "form" would match inside
+   * "information", producing confidently irrelevant answers.
+   */
+  private queryContainsKeyword(lowerQuery: string, keyword: string): boolean {
+    const pattern = new RegExp(`(^|\\W)${this.escapeRegex(keyword)}(\\W|$)`, 'i');
+    return pattern.test(lowerQuery);
+  }
+
+  /**
+   * Score knowledge entries against the query and return the most relevant ones
+   * the caller's role is permitted to see.
+   *
+   * Weighting, highest first:
+   *  - a full keyword phrase appearing in the query (strongest intent signal)
+   *  - a distinctive query word appearing in the entry's keyword list
+   *  - a distinctive query word appearing in the entry title
+   *  - a distinctive query word appearing in the entry body (weakest)
+   *
+   * Ubiquitous domain words are ignored so that, for example, asking about
+   * "procurement thresholds" does not match every entry containing the word
+   * "procurement". Entries scoring below a floor are dropped entirely, which is
+   * what lets the INSUFFICIENT_DATA escalation path stay meaningful.
    */
   private findMatches(role: Role, query: string): typeof ZETA_KNOWLEDGE_BASE {
     const lowerQuery = query.toLowerCase();
@@ -75,18 +114,40 @@ export class ZetaService {
       .split(/\W+/)
       .filter((w) => w.length > 2 && !this.STOPWORDS.has(w));
 
-    return ZETA_KNOWLEDGE_BASE.filter((entry) => {
-      if (!entry.roles.includes(role)) return false;
-      const haystack = `${entry.title.toLowerCase()} ${entry.content.toLowerCase()}`;
-      const keywordHaystack = entry.keywords.join(' ').toLowerCase();
+    // Distinctive words carry the relevance signal; low-signal words are kept
+    // only as a weak tie-breaker.
+    const strongWords = userWords.filter((w) => !this.LOW_SIGNAL_WORDS.has(w));
 
-      // Direct keyword match carries highest weight
-      const keywordMatch = entry.keywords.some((k) => lowerQuery.includes(k.toLowerCase()));
-      if (keywordMatch) return true;
+    const scored = ZETA_KNOWLEDGE_BASE.filter((entry) => entry.roles.includes(role)).map((entry) => {
+      const title = entry.title.toLowerCase();
+      const content = entry.content.toLowerCase();
+      const keywords = entry.keywords.map((k) => k.toLowerCase());
+      let score = 0;
 
-      // Content match only on non-stopword tokens
-      return userWords.length > 0 && userWords.some((word) => haystack.includes(word) || keywordHaystack.includes(word));
+      // Strongest: the user's text contains one of the entry's keyword phrases.
+      for (const keyword of keywords) {
+        if (this.queryContainsKeyword(lowerQuery, keyword)) {
+          // Multi-word phrases are a much stronger signal than single words.
+          score += keyword.includes(' ') ? 12 : 6;
+        }
+      }
+
+      for (const word of strongWords) {
+        // Keyword lists may hold phrases, so a partial hit there is meaningful
+        // ("publish" legitimately matching the keyword "publish tender").
+        if (keywords.some((k) => k.includes(word))) score += 4;
+        // Prose is matched on whole words only, to avoid spurious hits.
+        if (this.queryContainsKeyword(title, word)) score += 3;
+        if (this.queryContainsKeyword(content, word)) score += 1;
+      }
+
+      return { entry, score };
     });
+
+    // Require a real signal, not an incidental single body-text hit.
+    const relevant = scored.filter((s) => s.score >= 3).sort((a, b) => b.score - a.score);
+
+    return relevant.slice(0, this.MAX_MATCHES).map((s) => s.entry);
   }
 
   /**
