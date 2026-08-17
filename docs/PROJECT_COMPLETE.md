@@ -85,6 +85,7 @@ docker compose up --build -d
 - External KMS/Vault for encryption key management
 - Append-only / WORM audit-log replica
 - Redis-backed rate limiting for multi-instance deployments
-- Sandboxed LLM prompt-injection guards and bias audits
 - SMS gateway integration (Africa’s Talking) for rural suppliers
 - Formal penetration testing and usability studies
+
+~~Sandboxed LLM prompt-injection guards and bias audits~~ — done: see `services/api/src/ai/prompt-guard.ts` and `docs/FINAL_HARDENING.md` §11.

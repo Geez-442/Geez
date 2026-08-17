@@ -67,4 +67,15 @@ export class ZetaController {
       limit ? parseInt(limit, 10) : 100,
     );
   }
+
+  /**
+   * List ZETA interactions blocked or redacted by the prompt-injection / output
+   * guard rails, for periodic review of false positives/negatives and bias.
+   * Restricted to PMU and PRAZ oversight roles.
+   */
+  @Get('guard-flags')
+  @Roles(Role.PMU_Officer, Role.PRAZ_Regulator)
+  async guardFlags(@Req() req: any, @Query('limit') limit?: string) {
+    return this.zetaService.listGuardFlags(req.user.role as Role, limit ? parseInt(limit, 10) : 50);
+  }
 }

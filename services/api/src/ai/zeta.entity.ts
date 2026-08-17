@@ -31,6 +31,14 @@ export class ZetaInteraction {
   @Column({ default: false })
   insufficientData!: boolean;
 
+  // Populated when the input or output guard rails flagged this interaction
+  // (e.g. suspected prompt injection or a leaked-secret pattern in the answer).
+  @Column({ type: 'simple-array', nullable: true })
+  guardFlags!: string[] | null;
+
+  @Column({ default: false })
+  blocked!: boolean;
+
   @Column({ type: 'jsonb', nullable: true })
   metadata!: any;
 

@@ -7,6 +7,7 @@ import { Role } from '../auth.stub';
 import { AuditLog } from '../audit/audit.entity';
 import { computeChainHash } from '../crypto/hash-chain';
 import { composeAnswerWithLangChain } from './zeta.langchain';
+import { guardInput, guardOutput, getRefusalMessage } from './prompt-guard';
 
 export interface ZetaQuery {
   role: Role;
@@ -22,6 +23,8 @@ export interface ZetaResponse {
   matchedEntryIds: string[];
   insufficientData: boolean;
   advisory: true;
+  blocked?: boolean;
+  guardFlags?: string[];
 }
 
 /**
@@ -97,6 +100,42 @@ export class ZetaService {
       throw new ForbiddenException('Invalid role');
     }
 
+    // Input guard: refuse prompt-injection / corruption-facilitation attempts
+    // before the query ever reaches the knowledge-base matcher or the LLM.
+    const inputCheck = guardInput(query);
+    if (!inputCheck.safe) {
+      const refusal = getRefusalMessage();
+
+      const blockedInteraction = await this.interactionRepo.save({
+        actorId,
+        actorRole: role,
+        query,
+        response: refusal,
+        sources: [],
+        matchedEntryIds: [],
+        insufficientData: false,
+        blocked: true,
+        guardFlags: inputCheck.reasons,
+        metadata: { guardStage: 'input' },
+      });
+
+      await this.appendAudit(actorId, role, 'ZETA_GUARD_BLOCKED_INPUT', blockedInteraction.id, {
+        reasons: inputCheck.reasons,
+      });
+
+      return {
+        role,
+        query,
+        answer: refusal,
+        sources: [],
+        matchedEntryIds: [],
+        insufficientData: false,
+        advisory: true,
+        blocked: true,
+        guardFlags: inputCheck.reasons,
+      };
+    }
+
     const matches = this.findMatches(role, query);
     const insufficientData = matches.length === 0;
 
@@ -114,7 +153,17 @@ export class ZetaService {
     }
 
     // Route the grounded answer through the LangChain prompt/template pipeline.
-    const answer = await composeAnswerWithLangChain(role, query, matches, fallbackAnswer);
+    let answer = await composeAnswerWithLangChain(role, query, matches, fallbackAnswer);
+
+    // Output guard: scan whatever the model produced for signs a guard rail was
+    // bypassed (leaked secrets/config, or apparent compliance with a request the
+    // system prompt should have refused). If flagged, fall back to the safe,
+    // deterministic template rather than returning the model's text.
+    const outputCheck = guardOutput(answer);
+    const guardFlags = outputCheck.safe ? undefined : outputCheck.reasons;
+    if (!outputCheck.safe) {
+      answer = fallbackAnswer;
+    }
 
     const interaction = await this.interactionRepo.save({
       actorId,
@@ -124,13 +173,16 @@ export class ZetaService {
       sources,
       matchedEntryIds,
       insufficientData,
+      blocked: false,
+      guardFlags: guardFlags || null,
       metadata: { matchedCount: matches.length },
     });
 
-    await this.appendAudit(actorId, role, 'ZETA_ADVICE', interaction.id, {
+    await this.appendAudit(actorId, role, outputCheck.safe ? 'ZETA_ADVICE' : 'ZETA_GUARD_REDACTED_OUTPUT', interaction.id, {
       insufficientData,
       matchedEntryIds,
       queryLength: query.length,
+      guardFlags,
     });
 
     return {
@@ -141,6 +193,7 @@ export class ZetaService {
       matchedEntryIds,
       insufficientData,
       advisory: true,
+      ...(guardFlags ? { guardFlags } : {}),
     };
   }
 
@@ -176,6 +229,38 @@ export class ZetaService {
     return {
       advisory: true,
       summary,
+    };
+  }
+
+  /**
+   * List ZETA interactions that were blocked or redacted by the guard rails.
+   * Intended for periodic PRAZ/researcher review of false positives/negatives
+   * and for spotting systematic patterns (a lightweight bias-audit log).
+   * Never includes interactions that passed both guards cleanly.
+   */
+  async listGuardFlags(actorRole: Role, limit = 50) {
+    if (actorRole !== Role.PRAZ_Regulator && actorRole !== Role.PMU_Officer) {
+      throw new ForbiddenException('Only PRAZ/PMU can review ZETA guard flags');
+    }
+
+    const flagged = await this.interactionRepo
+      .createQueryBuilder('interaction')
+      .where('interaction.blocked = true OR interaction.guardFlags IS NOT NULL')
+      .orderBy('interaction.createdAt', 'DESC')
+      .take(Math.min(limit, 200))
+      .getMany();
+
+    return {
+      advisory: true,
+      count: flagged.length,
+      flags: flagged.map((f) => ({
+        id: f.id,
+        actorRole: f.actorRole,
+        query: f.query,
+        blocked: f.blocked,
+        guardFlags: f.guardFlags,
+        createdAt: f.createdAt,
+      })),
     };
   }
 }

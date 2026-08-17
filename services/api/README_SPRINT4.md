@@ -54,4 +54,12 @@ These tests are isolated from the database and external APIs.
 ## Next steps
 
 - Sprint 5 will add anomaly detection over audit-log metadata, partially consumed by ZETA for oversight summaries.
-- Future hardening: swap the static knowledge base for a vector-backed retrieval layer (e.g., PRAZ bidding documents) and add a sandboxed LLM adapter with prompt-injection guards.
+- Future hardening: swap the static knowledge base for a vector-backed retrieval layer (e.g., PRAZ bidding documents).
+
+## Update: LangChain pipeline, public endpoint, and guard rails
+
+Since this document was first written, ZETA has been extended:
+
+- `zeta.langchain.ts` wires a domain-specific PRAZ prompt template to either `ChatOpenAI` (when `OPENAI_API_KEY` is set) or a deterministic `FakeLLM` fallback, so the system works identically in research/CI without external API keys.
+- `POST /zeta/ask-public` exposes unauthenticated, `Public_Observer`-scoped guidance for the public transparency portal and pre-login pages.
+- `prompt-guard.ts` adds defence-in-depth **input** and **output** guard rails that run independently of the LLM prompt: they refuse instruction-override/jailbreak/prompt-extraction attempts and corruption-facilitation requests before the model is invoked, and scan the composed answer for leaked secrets or apparent policy bypass afterwards. Flagged interactions are persisted and auditable via `GET /zeta/guard-flags` (PMU/PRAZ only) — see `docs/FINAL_HARDENING.md` §11 for the full design rationale and threat model.
